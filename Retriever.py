@@ -28,7 +28,7 @@ tokenizer = open_clip.get_tokenizer("ViT-B-32")
 
 # --- REQUEST MODEL ---
 class SearchRequest(BaseModel):
-    queries: list[str]   # 🔥 multiple queries
+    queries: list[str]
     lambda_mult: float = 0.7
     category: str = None
 
@@ -72,7 +72,7 @@ def calculate_mmr(query_embedding, candidate_embeddings, top_k=4, lambda_mult=0.
 @app.post("/search")
 def search_models(req: SearchRequest):
     try:
-        # 🔥 1. Encode multiple queries
+        # 1. Encode multiple queries
         query_texts = [f"a clean 3D model of a {q}" for q in req.queries]
 
         text_tokens = tokenizer(query_texts).to(device)
@@ -85,7 +85,7 @@ def search_models(req: SearchRequest):
             np.linalg.norm(query_embeddings, axis=1, keepdims=True) + 1e-8
         )
 
-        # 🔥 2. Retrieve for each query
+        # 2. Retrieve for each query
         all_embeddings = []
         all_metadatas = []
 
@@ -110,25 +110,25 @@ def search_models(req: SearchRequest):
         if len(all_embeddings) == 0:
             return {"results": []}
 
-        # 🔥 3. Normalize
+        # 3. Normalize
         candidate_embeddings = np.array(all_embeddings)
         norms = np.linalg.norm(candidate_embeddings, axis=1, keepdims=True)
         candidate_embeddings = candidate_embeddings / (norms + 1e-8)
 
-        # 🔥 4. Multi-query similarity (MAX across queries)
+        # 4. Multi-query similarity (MAX across queries)
         sim_scores = np.max(
             np.dot(candidate_embeddings, query_embeddings.T),
             axis=1
         )
 
-        # 🔥 5. Dynamic threshold
+        # 5. Dynamic threshold
         top_sim = np.max(sim_scores)
         valid_indices = [i for i in range(len(sim_scores)) if sim_scores[i] > 0.7 * top_sim]
 
         if not valid_indices:
             valid_indices = list(range(len(sim_scores)))
 
-        # 🔥 6. GROUP BY MODEL
+        # 6. GROUP BY MODEL
         model_groups = defaultdict(list)
 
         for i in valid_indices:
@@ -141,7 +141,7 @@ def search_models(req: SearchRequest):
             if folder_path:
                 model_groups[folder_path].append((i, candidate_embeddings[i]))
 
-        # 🔥 7. BEST VIEW PER MODEL
+        # 7. BEST VIEW PER MODEL
         model_embeddings = []
         model_paths = []
 
@@ -150,7 +150,7 @@ def search_models(req: SearchRequest):
             best_embedding = None
 
             for idx, emb in items:
-                sim = np.max(np.dot(emb, query_embeddings.T))  # multi-query sim
+                sim = np.max(np.dot(emb, query_embeddings.T))
                 if sim > best_sim:
                     best_sim = sim
                     best_embedding = emb
@@ -164,11 +164,11 @@ def search_models(req: SearchRequest):
 
         model_embeddings = np.array(model_embeddings)
 
-        # 🔥 8. Use centroid query for MMR
+        # 8. Use centroid query for MMR
         query_centroid = np.mean(query_embeddings, axis=0)
         query_centroid /= (np.linalg.norm(query_centroid) + 1e-8)
 
-        # 🔥 9. MMR on models (TOP 4)
+        # 9. MMR on models (TOP 4)
         top_k = min(4, len(model_embeddings))
 
         best_indices = calculate_mmr(
@@ -178,7 +178,7 @@ def search_models(req: SearchRequest):
             lambda_mult=req.lambda_mult
         )
 
-        # 🔥 10. Format output
+        # 10. Format output
         formatted_results = []
 
         for idx in best_indices:

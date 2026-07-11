@@ -2,19 +2,19 @@ import os
 import torch
 import chromadb
 from chromadb.config import Settings
-from clip_embed import get_folder_embedding  # your function
+from clip_embed import get_folder_embedding
 
-# 🔹 Device
+# Device
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-client = chromadb.PersistentClient(path='D:/IIITV ICD/Python workplace/MetaCluster/chromadb')
+client = chromadb.PersistentClient(path='D:/IIITV ICD/Python workplace/MetaCluster/vector_db')
 print('done')
 collection = client.get_or_create_collection(name="modelnet_embeddings")
 
-# 🔹 Parent directory
+# Parent directory
 parent_dir = r'D:\IIITV ICD\Python workplace\MetaCluster\Rendered_Meshy'
 
-# 🔹 Collect all sub-category folders
+# Collect all sub-category folders
 final_dirs = []
 
 for category in os.listdir(parent_dir):
@@ -31,7 +31,7 @@ for category in os.listdir(parent_dir):
 
 print(f"Total folders found: {len(final_dirs)}")
 
-# 🔹 Batch settings
+# Batch settings
 BATCH_SIZE = 32
 
 batch_ids = []
@@ -40,7 +40,7 @@ batch_metadata = []
 
 done = 0
 
-# 🔹 Process folders
+# Process folders
 for i, folder in enumerate(final_dirs):
 
     mean_emb = get_folder_embedding(folder)
@@ -56,10 +56,10 @@ for i, folder in enumerate(final_dirs):
 
     done += 1
 
-    # 🔹 Print progress
+    # Print progress
     print(f"Progress: {(done / len(final_dirs)) * 100:.2f}%")
 
-    # 🔹 Insert batch
+    # Insert batch
     if len(batch_ids) == BATCH_SIZE:
         collection.add(
             ids=batch_ids,
@@ -69,7 +69,7 @@ for i, folder in enumerate(final_dirs):
 
         batch_ids, batch_embeddings, batch_metadata = [], [], []
 
-# 🔹 Insert remaining
+# Insert remaining
 if batch_ids:
     collection.add(
         ids=batch_ids,
