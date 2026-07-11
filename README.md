@@ -23,8 +23,7 @@ As shown in the workspace (`image_ae167c.png`), the project structure is as foll
 
 ```text
 MetaCluster/
-├── chromadb/               # ChromaDB persistence storage directory (ignored in version control)
-├── vector_db/              # Additional vector index/database artifacts
+├── vector_db/              # ChromaDB persistence storage directory (vector index/database artifacts)
 ├── clip_embed.py           # Logic for handling CLIP model inference and embedding generation
 ├── embedd_images.py        # Script to batch process and insert asset images into the vector store
 ├── Retriever.py            # Core engine query and semantic search matching algorithms
