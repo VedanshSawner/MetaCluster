@@ -35,7 +35,7 @@ MetaCluster/
 The screenshots below show the semantic retrieval pipeline driving the Unreal Engine 5 client through its three key stages.
 
 ### 1. Default State
-The shelf is initialized and idle. The top rows hold the rendered previews served from the `/images` endpoint, while the lower slots wait as empty (green) placeholders until a query is made.
+The shelf is initialized and idle. The top rows hold the rendered previews served from the `/images` endpoint.
 
 ![Default state — idle shelf](docs/screenshots/default%20state.png)
 
